@@ -1,0 +1,16 @@
+[project]
+name = "ai-agent"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "chromadb>=1.5.8",
+    "dotenv>=0.9.9",
+    "google-genai>=1.71.0",
+    "langchain>=1.2.15",
+    "langchain-anthropic>=1.4.0",
+    "polars>=1.39.3",
+    "psycopg2-binary>=2.9.11",
+    "python-dotenv>=1.2.2",
+]

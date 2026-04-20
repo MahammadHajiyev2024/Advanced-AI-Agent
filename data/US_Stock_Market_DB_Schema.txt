@@ -1,0 +1,189 @@
+--
+-- PostgreSQL database dump
+--
+
+\restrict 6ty5dhKJH43zplUMDTEgt4qVbWQuTpxl48skeCrzTrgdWHpdZG81KaMia7YDBuL
+
+-- Dumped from database version 18.1
+-- Dumped by pg_dump version 18.1
+
+-- Started on 2026-04-08 20:30:19
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- TOC entry 4 (class 2615 OID 2200)
+-- Name: public; Type: SCHEMA; Schema: -; Owner: pg_database_owner
+--
+
+CREATE SCHEMA public;
+
+
+ALTER SCHEMA public OWNER TO pg_database_owner;
+
+--
+-- TOC entry 5040 (class 0 OID 0)
+-- Dependencies: 4
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: pg_database_owner
+--
+
+COMMENT ON SCHEMA public IS 'standard public schema';
+
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- TOC entry 224 (class 1259 OID 16716)
+-- Name: dividends; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.dividends (
+    dividend_date date,
+    dividends double precision,
+    ticker character varying(10)
+);
+
+
+ALTER TABLE public.dividends OWNER TO postgres;
+
+--
+-- TOC entry 225 (class 1259 OID 16724)
+-- Name: history; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.history (
+    history_date date,
+    open_price double precision,
+    high_price double precision,
+    low_price double precision,
+    close_price double precision,
+    adj_close double precision,
+    volume bigint,
+    ticker character varying(10)
+);
+
+
+ALTER TABLE public.history OWNER TO postgres;
+
+--
+-- TOC entry 223 (class 1259 OID 16709)
+-- Name: tickers; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.tickers (
+    ticker character varying(10) NOT NULL,
+    company_name character varying(255) DEFAULT 'Unknown'::character varying
+);
+
+
+ALTER TABLE public.tickers OWNER TO postgres;
+
+--
+-- TOC entry 228 (class 1259 OID 16846)
+-- Name: company_performance; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.company_performance AS
+ SELECT t.ticker,
+    t.company_name,
+    d.dividend_date,
+    d.dividends,
+    h.close_price
+   FROM ((public.tickers t
+     JOIN public.dividends d ON (((t.ticker)::text = (d.ticker)::text)))
+     JOIN public.history h ON ((((t.ticker)::text = (h.ticker)::text) AND (d.dividend_date = h.history_date))));
+
+
+ALTER VIEW public.company_performance OWNER TO postgres;
+
+--
+-- TOC entry 226 (class 1259 OID 16732)
+-- Name: splits; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.splits (
+    split_date date,
+    stock_splits character varying(20),
+    ticker character varying(10)
+);
+
+
+ALTER TABLE public.splits OWNER TO postgres;
+
+--
+-- TOC entry 227 (class 1259 OID 16838)
+-- Name: stage_json_tickers; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.stage_json_tickers (
+    raw_data text
+);
+
+
+ALTER TABLE public.stage_json_tickers OWNER TO postgres;
+
+--
+-- TOC entry 4881 (class 2606 OID 16715)
+-- Name: tickers tickers_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.tickers
+    ADD CONSTRAINT tickers_pkey PRIMARY KEY (ticker);
+
+
+--
+-- TOC entry 4883 (class 2606 OID 16851)
+-- Name: history unique_history_entry; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.history
+    ADD CONSTRAINT unique_history_entry UNIQUE (history_date, ticker);
+
+
+--
+-- TOC entry 4884 (class 2606 OID 16719)
+-- Name: dividends dividends_ticker_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.dividends
+    ADD CONSTRAINT dividends_ticker_fkey FOREIGN KEY (ticker) REFERENCES public.tickers(ticker);
+
+
+--
+-- TOC entry 4885 (class 2606 OID 16727)
+-- Name: history history_ticker_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.history
+    ADD CONSTRAINT history_ticker_fkey FOREIGN KEY (ticker) REFERENCES public.tickers(ticker);
+
+
+--
+-- TOC entry 4886 (class 2606 OID 16735)
+-- Name: splits splits_ticker_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.splits
+    ADD CONSTRAINT splits_ticker_fkey FOREIGN KEY (ticker) REFERENCES public.tickers(ticker);
+
+
+-- Completed on 2026-04-08 20:30:20
+
+--
+-- PostgreSQL database dump complete
+--
+
+\unrestrict 6ty5dhKJH43zplUMDTEgt4qVbWQuTpxl48skeCrzTrgdWHpdZG81KaMia7YDBuL
+
